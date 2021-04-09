@@ -1,130 +1,122 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
+   <v-card
+    color="red lighten-2"
+    dark
+  >
+    <v-card-title class="headline red lighten-3">
+      Search for Public APIs
+    </v-card-title>
+    <v-card-text>
+      Explore hundreds of free API's ready for consumption! For more information visit
+      <a
+        class="grey--text text--lighten-3"
+        href="https://github.com/toddmotto/public-apis"
+        target="_blank"
+      >the Github repository</a>.
+    </v-card-text>
+    <v-card-text>
+      <v-autocomplete
+        v-model="model"
+        :items="items"
+        :loading="isLoading"
+        :search-input.sync="search"
+        color="white"
+        hide-no-data
+        hide-selected
+        item-text="Description"
+        item-value="API"
+        label="Public APIs"
+        placeholder="Start typing to Search"
+        prepend-icon="mdi-database-search"
+        return-object
+      ></v-autocomplete>
+    </v-card-text>
+    <v-divider></v-divider>
+    <v-expand-transition>
+      <v-list
+        v-if="model"
+        class="red lighten-3"
+      >
+        <v-list-item
+          v-for="(field, i) in fields"
+          :key="i"
         >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router"
-          target="_blank"
-          rel="noopener"
-          >router</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex"
-          target="_blank"
-          rel="noopener"
-          >vuex</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
-  </div>
+          <v-list-item-content>
+            <v-list-item-title v-text="field.value"></v-list-item-title>
+            <v-list-item-subtitle v-text="field.key"></v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-expand-transition>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn
+        :disabled="!model"
+        color="grey darken-3"
+        @click="model = null"
+      >
+        Clear
+        <v-icon right>
+          mdi-close-circle
+        </v-icon>
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
 export default {
-  name: "HelloWorld",
-  props: {
-    msg: String,
+  data() {
+    return{
+    descriptionLimit: 60,
+      entries: [],
+      isLoading: false,
+      model: null,
+      search: null,
+    }
   },
+   computed: {
+      fields () {
+        if (!this.model) return []
+        return Object.keys(this.model).map(key => {
+          return {
+            key,
+            value: this.model[key] || 'n/a',
+          }
+        })
+      },
+      items () {
+        return this.entries.map(entry => {
+          const Description = entry["2. name"] > this.descriptionLimit
+            ? entry["2. name"].slice(0, this.descriptionLimit) + '...'
+            : entry["2. name"]
+          return Object.assign({}, entry, { Description })
+        })
+      },
+    },
+
+    watch: {
+      search () {
+        // Items have already been loaded
+        if (this.items.length > 0) return
+
+        // Items have already been requested
+        if (this.isLoading) return
+
+        this.isLoading = true
+
+        // Lazily load input items
+        this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${this.search}&apikey=4BZ4I65PMOT2H14B`)
+          .then(res => {
+            this.count = res.data.bestMatches.length
+            this.entries = res.data.bestMatches
+           
+          })
+          .catch(err => {
+            console.log(err)
+          })
+          .finally(() => (this.isLoading = false))
+      },
+    },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
