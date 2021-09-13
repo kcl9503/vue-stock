@@ -1,0 +1,12 @@
+version: '3'
+services:
+  vue-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    container_name: vue-ui
+    volumes:
+       - ./:/usr/src/app/stock-project
+       - /usr/src/app/stock-project/node_modules

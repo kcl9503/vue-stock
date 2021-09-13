@@ -16,8 +16,8 @@
             hide-selected
             item-text="Description"
             item-value="API"
-            label="Public APIs"
-            placeholder="Start typing to Search"
+            label="搜尋公司名稱"
+            placeholder="請輸入關鍵字"
             prepend-icon="mdi-database-search"
             return-object
           >
@@ -62,57 +62,62 @@ export default {
     return{
     descriptionLimit: 60,
       entries: [],
+      imageUrl: '',
       isLoading: false,
       model: null,
       search: null,
     }
   },
-   computed: {
-      fields () {
-        if (!this.model) return []
-        return Object.keys(this.model).map(key => {
-          return {
-            key,
-            value: this.model[key] || 'n/a',
-          }
-        })
-      },
-      items () {
-        return this.entries.map(entry => {
-          const Description = entry["2. name"] > this.descriptionLimit
-            ? entry["2. name"].slice(0, this.descriptionLimit) + '...'
-            : entry["2. name"]
-          return Object.assign({}, entry, { Description })
-        })
-      },
+
+  computed: {
+    fields () {
+      if (!this.model) return []
+      return Object.keys(this.model).map(key => {
+        return {
+          key,
+          value: this.model[key] || 'n/a',
+        }
+      })
     },
-
-    watch: {
-      search () {
-        // Items have already been loaded
-        if (this.items.length > 0) return
-
-        // Items have already been requested
-        if (this.isLoading) return
-
-        this.isLoading = true
-
-        // Lazily load input items
-        this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${this.search}&apikey=4BZ4I65PMOT2H14B`)
-          .then(res => {
-            this.count = res.data.bestMatches.length
-            this.entries = res.data.bestMatches
-           
-          })
-          .catch(err => {
-            console.log(err)
-          })
-          .finally(() => (this.isLoading = false))
-      },
+    items () {
+      return this.entries.map(entry => {
+        const Description = entry["2. name"] > this.descriptionLimit
+          ? entry["2. name"].slice(0, this.descriptionLimit) + '...'
+          : entry["2. name"]
+          console.log(Description)
+        return Object.assign({}, entry, { Description })
+      })
     },
+  },
+
+  watch: {
+    search (value) {
+      console.log(value)
+      // Items have already been loaded
+      if (this.items.length > 0) return
+      // Items have already been requested
+      if (this.isLoading) return
+      this.isLoading = true
+
+      this.$store.dispatch('getDog')
+      // Lazily load input items
+      this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${this.search}&apikey=4BZ4I65PMOT2H14B`)
+        .then(res => {
+          console.log(res)
+          this.count = res.data.bestMatches.length
+          this.entries = res.data.bestMatches
+         
+        })
+        .catch(err => {
+          console.log(err)
+        })
+        .finally(() => (this.isLoading = false))
+    },
+  },
 };
 </script>
-<style scoped>
+<style scoped lang="scss">
+$color: white;
 .navBar{
   display: flex;
   justify-content: space-between;

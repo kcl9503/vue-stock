@@ -1,19 +1,21 @@
 <template>
   <v-app>
     <v-main>
-      <HelloWorld />
+      <SearchBar />
+      <Chart />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld";
-
+import SearchBar from "./components/searchBar/searchBar";
+import Chart from "./components/chart"
 export default {
   name: "App",
 
   components: {
-    HelloWorld,
+    SearchBar,
+    Chart
   },
 
   data: () => ({
