@@ -5,10 +5,19 @@ import store from "./store";
 import axios from "axios";
 import VueAxios from "vue-axios";
 import vuetify from "./plugins/vuetify";
+
+// import VueMoment from 'vue-moment'
+// import moment from 'moment-timezone'
+// Vue.use(VueMoment, {
+//     moment,
+// })
+
 import HighchartsVue from 'highcharts-vue'
-import Highcharts from "highcharts";
-import Stock from "highcharts/modules/stock";
-Stock(Highcharts);
+import Highcharts from 'highcharts'
+import stockInit from 'highcharts/modules/stock'
+import exportingInit from 'highcharts/modules/exporting'
+stockInit(Highcharts)
+exportingInit(Highcharts);
 Vue.use(HighchartsVue)
 
 Vue.use(VueAxios, axios);

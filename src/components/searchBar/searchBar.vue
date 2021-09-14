@@ -57,10 +57,13 @@
 </template>
 
 <script>
+
 export default {
   data() {
     return{
-    descriptionLimit: 60,
+      nowDate: new Date().getTime(),
+      companyName: [],
+      descriptionLimit: 60,
       entries: [],
       imageUrl: '',
       isLoading: false,
@@ -68,7 +71,6 @@ export default {
       search: null,
     }
   },
-
   computed: {
     fields () {
       if (!this.model) return []
@@ -84,7 +86,7 @@ export default {
         const Description = entry["2. name"] > this.descriptionLimit
           ? entry["2. name"].slice(0, this.descriptionLimit) + '...'
           : entry["2. name"]
-          console.log(Description)
+          this.companyName.push(Description)
         return Object.assign({}, entry, { Description })
       })
     },
@@ -92,21 +94,22 @@ export default {
 
   watch: {
     search (value) {
-      console.log(value)
       // Items have already been loaded
-      if (this.items.length > 0) return
+      // if (this.items.length > 0) return
       // Items have already been requested
       if (this.isLoading) return
       this.isLoading = true
 
-      this.$store.dispatch('getDog')
+
       // Lazily load input items
-      this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${this.search}&apikey=4BZ4I65PMOT2H14B`)
+      this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${value}&apikey=4BZ4I65PMOT2H14B`)
         .then(res => {
           console.log(res)
           this.count = res.data.bestMatches.length
           this.entries = res.data.bestMatches
-         
+          if(this.companyName.includes(value)){
+            this.searchCompany(value)
+          }
         })
         .catch(err => {
           console.log(err)
@@ -114,6 +117,11 @@ export default {
         .finally(() => (this.isLoading = false))
     },
   },
+  methods:{
+    searchCompany(value){
+      this.$store.dispatch('getStockData', value)
+    }
+  }
 };
 </script>
 <style scoped lang="scss">
