@@ -1,12 +1,13 @@
 <template>
   <div>
-  <div><highcharts class="stock" :constructor-type="'stockChart'" :options="stockOptions" ref="mystock"></highcharts></div>
+    <highcharts v-if="showChart" class="stock" :constructor-type="'stockChart'" :options="stockOptions" ref="mystock"></highcharts>
   </div>
 </template>
 <script>
 import stockDetail from '../store/index'
 import Highcharts from 'highcharts'
-
+// import { data } from './stockData.js'
+// const stockDataddd = data.map(d => d.slice(0.2))
 export default {
   computed:{
     stockData(){
@@ -17,10 +18,12 @@ export default {
     stockData(newD){
       this.processData = newD
       this.createData(this.processData)
+      this.showChart = true
     }
   },
   data() {
     return {
+      showChart: false,
       processData: [],
       stockOptions: {
         exporting: {
@@ -48,21 +51,21 @@ export default {
                 },
             }
         },
-        // xAxis: {
-        //   dateTimeLabelFormats: {
-        //     millisecond: "%H:%M:%S.%L",
-        //     second: "%H:%M:%S",
-        //     minute: "%H:%M",
-        //     hour: "%H:%M",
-        //     day: "%m-%d",
-        //     week: "%m-%d",
-        //     month: "%y-%m",
-        //     year: "%Y"
-        //   },
-        //   minRange:30*24 *3600000,
-        //   min: null,
-        //   max: null,
-        // },
+        xAxis: {
+          dateTimeLabelFormats: {
+            millisecond: "%H:%M:%S.%L",
+            second: "%H:%M:%S",
+            minute: "%H:%M",
+            hour: "%H:%M",
+            day: "%m-%d",
+            week: "%m-%d",
+            month: "%y-%m",
+            year: "%Y"
+          },
+          minRange:30*24 *3600000,
+          min: null,
+          max: null,
+        },
         tooltip: {
           split: false,
           shared: true,
@@ -83,7 +86,28 @@ export default {
             lineWidth: 0,
             showLastLabel: true,
             showFirstLabel: true,
-            tickPositioner: []
+      //       tickPositioner: function(){
+      //         var positions = [],
+      // tick = 0,
+      // increment = (this.dataMax - this.dataMin) / 5,
+      // max = this.dataMax,
+      // min = this.dataMin;
+      //      console.log(max, min)
+      // if(increment > 1) {
+      //   increment = Math.ceil(increment);
+      //   tick = Math.floor(this.dataMin);
+      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
+      //     positions.push(tick);
+      //   }
+      // } else {
+      //   tick = Number(min.toFixed(1))
+      //   increment = Number(increment.toFixed(3))
+      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
+      //     positions.push(Number(tick.toFixed(2)));
+      //   }
+      // }
+      // return positions;
+      //       }
           },
           {
             labels: {
@@ -103,7 +127,28 @@ export default {
             showFirstLabel: true,
             opposite: false,
             visible: false,
-            tickPositioner: []
+      //       tickPositioner: function(){
+      //         var positions = [],
+      // tick = 0,
+      // increment = (this.dataMax - this.dataMin) / 5,
+      // max = this.dataMax,
+      // min = this.dataMin;
+      //      console.log(max, min)
+      // if(increment > 1) {
+      //   increment = Math.ceil(increment);
+      //   tick = Math.floor(this.dataMin);
+      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
+      //     positions.push(tick);
+      //   }
+      // } else {
+      //   tick = Number(min.toFixed(1))
+      //   increment = Number(increment.toFixed(3))
+      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
+      //     positions.push(Number(tick.toFixed(2)));
+      //   }
+      // }
+      // return positions;
+      //       }
           },
           {
             labels: {
@@ -177,62 +222,24 @@ export default {
             dataGrouping:[],
             lineWidth: 1,
           }
-          ,{
-            type:'line',
-            name:'大盤',
-            data: [],
-            color: "red",
-            yAxis: 1,
-            dataGrouping:[],
-            lineWidth: 1,
-            visible: false,
-          }
-          ,{
-            type:'line',
-            name:'name',
-            data: [],
-            color: "white",
-            yAxis: 1,
-            dataGrouping:[],
-            lineWidth: 0,
-            visible: true,
-            enableMouseTracking: false
-          },
         ],
       }, 
       code: "",
       stockname: "",
+      dailyStockData: [],
       dayk:[],
     };
   },
 
   methods: {
     mainChartData(){
-      var positions = [],
-      tick = 0,
-      increment = (this.dataMax - this.dataMin) / 5,
-      // max = this.dataMax,
-      min = this.dataMin;
-      if(increment > 1) {
-        increment = Math.ceil(increment);
-        tick = Math.floor(this.dataMin);
-        for (tick; tick - increment <= this.dataMax; tick += increment) {
-          positions.push(tick);
-        }
-      } else {
-        tick = Number(min.toFixed(1))
-        increment = Number(increment.toFixed(3))
-        for (tick; tick - increment <= this.dataMax; tick += increment) {
-          positions.push(Number(tick.toFixed(2)));
-        }
-      }
-      return positions;
+      console.log(this.stockOptions.yAxis)
+
     },
     createData(data) {
       const stockDataDetail = data.map(d => d.slice(0.2))
-      console.log(stockDataDetail)
-      let stockData = stockDataDetail
-      let dataLength = stockData.length;
+      this.dailyStockData = stockDataDetail
+      let dataLength = this.dailyStockData.length;
       // set the allowed units for data grouping
       // let groupingUnits = [
       //   [
@@ -252,22 +259,22 @@ export default {
       let maset = [7,10,30,99];
 			let ma = [];
       for (i = 0; i < dataLength; i += 1) {
-        timeStamp = stockData[i][0];
+        timeStamp = this.dailyStockData[i][0];
         ohlc.push([
           timeStamp, // the date
-          stockData[i][1], // open
-          stockData[i][2], // high
-          stockData[i][3], // low
-          stockData[i][4] // close
+          this.dailyStockData[i][1], // open
+          this.dailyStockData[i][2], // high
+          this.dailyStockData[i][3], // low
+          this.dailyStockData[i][4] // close
         ]);
         ohlc2.push([
           timeStamp, // the date
-          stockData[i][4]  // close
+          this.dailyStockData[i][4]  // close
         ]);
         volume.push({
           x: timeStamp,
-          y: stockData[i][5], // the date
-          color: stockData[i][1] > stockData[i][4] ? 'green' : 'red'
+          y: this.dailyStockData[i][5], // the date
+          color: this.dailyStockData[i][1] > this.dailyStockData[i][4] ? 'green' : 'red'
         });
         for (let j = 0; j < maset.length; j++) {
           let value = maset[j];
@@ -279,10 +286,10 @@ export default {
           }
           if(i < value)
           {
-            ma[value+'total'] += stockData[i][4];
+            ma[value+'total'] += this.dailyStockData[i][4];
             ma['ma'+value].push([timeStamp,null]);
           } else {
-            ma[value+'total'] += (stockData[i][4] - stockData[i - value][4]);
+            ma[value+'total'] += (this.dailyStockData[i][4] - this.dailyStockData[i - value][4]);
             let kk = Number((ma[value+'total']/value).toFixed(2))
             ma['ma'+value].push([timeStamp, kk]);
           }   
@@ -295,24 +302,8 @@ export default {
       this.stockOptions.series[3].data = ma['ma10'];
       this.stockOptions.series[4].data = ma['ma30'];
       this.stockOptions.series[5].data = ma['ma99'];
+console.log(this.stockOptions, 2135)
 
-      i = 0;
-      timeStamp = 0;
-      ohlc = [];
-      for (i = 0; i < dataLength; i += 1) {
-        timeStamp = stockData[i][0];
-        let value = stockData[i][4];
-        value = Number((value * 200 - Math.floor((Math.random()*100)+1)).toFixed(2));
-        ohlc.push([
-          timeStamp, 
-          value// close
-        ])
-      }
-
-     console.log("dapan", ohlc);
-
-     this.stockOptions.series[6].data = ohlc;
-     this.stockOptions.series[7].data = ohlc2;
 
      if(dataLength < 20) {
         console.log("length < 20")
@@ -339,12 +330,6 @@ export default {
     }
   },
 
-  created() {
-    this.code = 'sh600001';
-    // this.dayk = stockDataddd;
-    this.stockname = '平安银行';
-    // this.createData();
-  }
 };
 </script>
 

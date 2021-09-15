@@ -12,14 +12,15 @@ const stockDetail = new Vuex.Store({
   mutations: {
     pushData(state, data) {
         //  console.log(state, data)
-      state.companyStockData.push(data)
+      state.companyStockData = data
   //  console.log(state)
     }
   },
   actions: {
-     getStockData() {
+    getStockData(actData, company) {
+      console.log(this,actData, company)
       return new Promise((resolve, reject) => {
-        axios.default.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=full&apikey=demo`)
+        axios.default.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${company}&apikey=4BZ4I65PMOT2H14B`)
           .then(res => {
             const responseData = res.data["Time Series (Daily)"]
             resolve(res)
@@ -34,6 +35,9 @@ const stockDetail = new Vuex.Store({
               let close = Number(responseData[d]["4. close"])
               let volume = Number(responseData[d]["5. volume"])
               detailData.push([timeStamp, open, high, low, close, volume])
+            })
+            detailData.sort((a, b) => {
+              return a[0] - b[0]
             })
             this.commit('pushData', detailData)
           })

@@ -83,10 +83,10 @@ export default {
     },
     items () {
       return this.entries.map(entry => {
-        const Description = entry["2. name"] > this.descriptionLimit
-          ? entry["2. name"].slice(0, this.descriptionLimit) + '...'
+        const Description = this.entries.length < 7 ? entry["1. symbol"]
           : entry["2. name"]
           this.companyName.push(Description)
+          console.log(entry, Description)
         return Object.assign({}, entry, { Description })
       })
     },
@@ -104,10 +104,10 @@ export default {
       // Lazily load input items
       this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${value}&apikey=4BZ4I65PMOT2H14B`)
         .then(res => {
-          console.log(res)
           this.count = res.data.bestMatches.length
           this.entries = res.data.bestMatches
           if(this.companyName.includes(value)){
+            
             this.searchCompany(value)
           }
         })
