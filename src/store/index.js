@@ -7,24 +7,25 @@ Vue.use(Vuex);
 
 const stockDetail = new Vuex.Store({
   state: {
-    companyStockData: []
+    companyStockData: [],
+    chartBoolean: null
   },
   mutations: {
     pushData(state, data) {
-        //  console.log(state, data)
       state.companyStockData = data
-  //  console.log(state)
+    },
+    pushBoolean(state, data) {
+      state.chartBoolean = data
     }
   },
   actions: {
     getStockData(actData, company) {
-      console.log(this,actData, company)
       return new Promise((resolve, reject) => {
-        axios.default.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${company}&apikey=4BZ4I65PMOT2H14B`)
+        axios.default.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${company}&outputsize=full&apikey=4BZ4I65PMOT2H14B`)
           .then(res => {
             const responseData = res.data["Time Series (Daily)"]
             resolve(res)
-    
+            console.log(res)
             let formatData = Object.keys(responseData)
             let detailData = []
             formatData.forEach(d => {
@@ -43,6 +44,9 @@ const stockDetail = new Vuex.Store({
           })
           .catch(err => reject(err));
       })
+    },
+    sendSwitch(actData, booleanType) {
+      this.commit('pushBoolean', booleanType)
     }
   },
   getters: {

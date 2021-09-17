@@ -10,15 +10,21 @@ import Highcharts from 'highcharts'
 // const stockDataddd = data.map(d => d.slice(0.2))
 export default {
   computed:{
-    stockData(){
+    stockDataDetail(){
       return stockDetail.state.companyStockData
+    },
+    chartSwitch(){
+      return stockDetail.state.chartBoolean
     }
   },
   watch:{
-    stockData(newD){
+    stockDataDetail(newD){
       this.processData = newD
       this.createData(this.processData)
-      this.showChart = true
+    },
+    chartSwitch(booleanType){
+      console.log(booleanType)
+      this.showChart = booleanType
     }
   },
   data() {
@@ -86,28 +92,26 @@ export default {
             lineWidth: 0,
             showLastLabel: true,
             showFirstLabel: true,
-      //       tickPositioner: function(){
-      //         var positions = [],
-      // tick = 0,
-      // increment = (this.dataMax - this.dataMin) / 5,
-      // max = this.dataMax,
-      // min = this.dataMin;
-      //      console.log(max, min)
-      // if(increment > 1) {
-      //   increment = Math.ceil(increment);
-      //   tick = Math.floor(this.dataMin);
-      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
-      //     positions.push(tick);
-      //   }
-      // } else {
-      //   tick = Number(min.toFixed(1))
-      //   increment = Number(increment.toFixed(3))
-      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
-      //     positions.push(Number(tick.toFixed(2)));
-      //   }
-      // }
-      // return positions;
-      //       }
+            tickPositioner: function(){
+              var positions = [],
+              tick = 0,
+              increment = (this.dataMax - this.dataMin) / 5,
+              min = this.dataMin;
+              if(increment > 1) {
+                increment = Math.ceil(increment);
+                tick = Math.floor(this.dataMin);
+                for (tick; tick - increment <= this.dataMax; tick += increment) {
+                  positions.push(tick);
+                }
+              } else {
+                tick = Number(min.toFixed(1))
+                increment = Number(increment.toFixed(3))
+                for (tick; tick - increment <= this.dataMax; tick += increment) {
+                  positions.push(Number(tick.toFixed(2)));
+                }
+              }
+              return positions;
+            }
           },
           {
             labels: {
@@ -127,28 +131,28 @@ export default {
             showFirstLabel: true,
             opposite: false,
             visible: false,
-      //       tickPositioner: function(){
-      //         var positions = [],
-      // tick = 0,
-      // increment = (this.dataMax - this.dataMin) / 5,
-      // max = this.dataMax,
-      // min = this.dataMin;
-      //      console.log(max, min)
-      // if(increment > 1) {
-      //   increment = Math.ceil(increment);
-      //   tick = Math.floor(this.dataMin);
-      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
-      //     positions.push(tick);
-      //   }
-      // } else {
-      //   tick = Number(min.toFixed(1))
-      //   increment = Number(increment.toFixed(3))
-      //   for (tick; tick - increment <= this.dataMax; tick += increment) {
-      //     positions.push(Number(tick.toFixed(2)));
-      //   }
-      // }
-      // return positions;
-      //       }
+            // tickPositioner: function(){
+            //   var positions = [],
+            //   tick = 0,
+            //   increment = (this.dataMax - this.dataMin) / 5,
+            //   max = this.dataMax,
+            //   min = this.dataMin;
+            //        console.log(max, min)
+            //   if(increment > 1) {
+            //     increment = Math.ceil(increment);
+            //     tick = Math.floor(this.dataMin);
+            //     for (tick; tick - increment <= this.dataMax; tick += increment) {
+            //       positions.push(tick);
+            //     }
+            //   } else {
+            //     tick = Number(min.toFixed(1))
+            //     increment = Number(increment.toFixed(3))
+            //     for (tick; tick - increment <= this.dataMax; tick += increment) {
+            //       positions.push(Number(tick.toFixed(2)));
+            //     }
+            //   }
+            //   return positions;
+            // }
           },
           {
             labels: {
@@ -168,10 +172,10 @@ export default {
           {
             type: "candlestick",
             name: "價格",
-            color: "green",
-            lineColor: "green",
-            upColor: "red",
-            upLineColor: "red",
+            color: "red",
+            lineColor: "red",
+            upColor: "green",
+            upLineColor: "green",
             tooltip: {},
             navigatorOptions: {
               color: Highcharts.getOptions().colors[0]
@@ -188,6 +192,7 @@ export default {
             yAxis: 2,
             dataGrouping: [],
             maxPointWidth: 7,
+            turboThreshold: 9999
           },
           {
             type:'line',
@@ -232,14 +237,9 @@ export default {
   },
 
   methods: {
-    mainChartData(){
-      console.log(this.stockOptions.yAxis)
-
-    },
     createData(data) {
-      const stockDataDetail = data.map(d => d.slice(0.2))
-      this.dailyStockData = stockDataDetail
-      let dataLength = this.dailyStockData.length;
+      const stockData = data.map(d => d.slice(0.2))
+      let dataLength = stockData.length;
       // set the allowed units for data grouping
       // let groupingUnits = [
       //   [
@@ -259,22 +259,22 @@ export default {
       let maset = [7,10,30,99];
 			let ma = [];
       for (i = 0; i < dataLength; i += 1) {
-        timeStamp = this.dailyStockData[i][0];
+        timeStamp = stockData[i][0];
         ohlc.push([
           timeStamp, // the date
-          this.dailyStockData[i][1], // open
-          this.dailyStockData[i][2], // high
-          this.dailyStockData[i][3], // low
-          this.dailyStockData[i][4] // close
+          stockData[i][1], // open
+          stockData[i][2], // high
+          stockData[i][3], // low
+          stockData[i][4] // close
         ]);
         ohlc2.push([
           timeStamp, // the date
-          this.dailyStockData[i][4]  // close
+          stockData[i][4]  // close
         ]);
         volume.push({
           x: timeStamp,
-          y: this.dailyStockData[i][5], // the date
-          color: this.dailyStockData[i][1] > this.dailyStockData[i][4] ? 'green' : 'red'
+          y: stockData[i][5], // the date
+          color: stockData[i][1] > stockData[i][4] ? 'red' : 'green'
         });
         for (let j = 0; j < maset.length; j++) {
           let value = maset[j];
@@ -286,10 +286,10 @@ export default {
           }
           if(i < value)
           {
-            ma[value+'total'] += this.dailyStockData[i][4];
+            ma[value+'total'] += stockData[i][4];
             ma['ma'+value].push([timeStamp,null]);
           } else {
-            ma[value+'total'] += (this.dailyStockData[i][4] - this.dailyStockData[i - value][4]);
+            ma[value+'total'] += (stockData[i][4] - stockData[i - value][4]);
             let kk = Number((ma[value+'total']/value).toFixed(2))
             ma['ma'+value].push([timeStamp, kk]);
           }   
@@ -302,11 +302,8 @@ export default {
       this.stockOptions.series[3].data = ma['ma10'];
       this.stockOptions.series[4].data = ma['ma30'];
       this.stockOptions.series[5].data = ma['ma99'];
-console.log(this.stockOptions, 2135)
-
 
      if(dataLength < 20) {
-        console.log("length < 20")
         var latesttime = ohlc[dataLength - 1][0]
         for(i = dataLength; i < 20; i+=1) {
           latesttime += 24 *3600000
@@ -322,18 +319,21 @@ console.log(this.stockOptions, 2135)
         this.stockOptions.xAxis.minRange = 30*24 *3600000;
       } 
       else {
-        console.log("length > 20")
         this.stockOptions.xAxis.min = null;
         this.stockOptions.xAxis.max = null;
         this.stockOptions.xAxis.minRange = 30*24 *3600000;
       }
+      this.showChart = true
     }
   },
-
+  
 };
 </script>
 
 <style scoped>
+div{
+  margin-bottom: 2rem;
+}
 .stock {
   width: 90%;
   margin: 0 auto;

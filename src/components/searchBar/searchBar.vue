@@ -61,7 +61,6 @@
 export default {
   data() {
     return{
-      nowDate: new Date().getTime(),
       companyName: [],
       descriptionLimit: 60,
       entries: [],
@@ -83,38 +82,41 @@ export default {
     },
     items () {
       return this.entries.map(entry => {
-        const Description = this.entries.length < 7 ? entry["1. symbol"]
-          : entry["2. name"]
+        const Description =`${entry["2. name"]} | ${entry["1. symbol"]}`
           this.companyName.push(Description)
-          console.log(entry, Description)
         return Object.assign({}, entry, { Description })
       })
     },
   },
 
   watch: {
+    model(type){
+      console.log(type)
+      if(!type){
+        this.$store.dispatch('sendSwitch', false)
+      }
+    },
     search (value) {
-      // Items have already been loaded
-      // if (this.items.length > 0) return
-      // Items have already been requested
-      if (this.isLoading) return
+      if(value){
       this.isLoading = true
-
-
-      // Lazily load input items
+      this.entries.length = 0
       this.axios.get(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${value}&apikey=4BZ4I65PMOT2H14B`)
         .then(res => {
+          if(res.data.bestMatches){
           this.count = res.data.bestMatches.length
-          this.entries = res.data.bestMatches
+          this.entries = res.data.bestMatches}
           if(this.companyName.includes(value)){
-            
-            this.searchCompany(value)
+            const searchSymbol = value.split(' | ').pop()
+            this.searchCompany(searchSymbol)
           }
         })
         .catch(err => {
           console.log(err)
         })
         .finally(() => (this.isLoading = false))
+      }else{
+        this.model = null
+      }
     },
   },
   methods:{
@@ -129,6 +131,7 @@ $color: white;
 .navBar{
   display: flex;
   justify-content: space-between;
+  margin-bottom: 1rem;
 }
 .searchBar{
   width: 80%;
